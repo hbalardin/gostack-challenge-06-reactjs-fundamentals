@@ -38,13 +38,24 @@ const Dashboard: React.FC = () => {
       const response = await api.get('transactions');
 
       const formattedTranscations = response.data.transactions.map(
-        (transaction: Transaction): Transaction => ({
-          ...transaction,
-          formattedValue: formatValue(transaction.value),
-          formattedDate: new Date(transaction.created_at).toLocaleDateString(
-            'pt-br',
-          ),
-        }),
+        (transaction: Transaction): Transaction => {
+          let parsedTransaction = {
+            ...transaction,
+            formattedValue: formatValue(transaction.value),
+            formattedDate: new Date(transaction.created_at).toLocaleDateString(
+              'pt-br',
+            ),
+          };
+
+          if (transaction.type === 'outcome') {
+            parsedTransaction = {
+              ...parsedTransaction,
+              formattedValue: `- ${parsedTransaction.formattedValue}`,
+            };
+          }
+
+          return parsedTransaction;
+        },
       );
 
       const formattedBalance = {
@@ -104,7 +115,6 @@ const Dashboard: React.FC = () => {
                 <tr key={transaction.id}>
                   <td className="title">{transaction.title}</td>
                   <td className={transaction.type}>
-                    {transaction.type === 'outcome' && `- `}
                     {`${transaction.formattedValue}`}
                   </td>
                   <td>{transaction.category.title}</td>
